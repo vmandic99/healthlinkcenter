@@ -1,0 +1,133 @@
+<html>
+
+<head>
+
+  <title>
+    MainPage
+  </title>
+  <link rel="icon" type="index/x-icon" href="/content/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+  <div id="redDiv">
+    <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home"/>
+    <img id="logoutImage" src="/content/LogOut.png" alt="LogOut" title="Logout"/>
+</div>
+
+  <h1 id="welcometext">Welcome!</h1>
+  <p> Please choose your operation you would like to take! :D</p>
+  <input type="submit" id="pulsemeasurement" name="pulsemeasurement" value="Measure your pulse" />
+  <div>
+    <p>Authorize a caregiver to have an overview of your measurements.</p>
+    <input type="text" id="emailcare" name="emailcare" placeholder="Enter E-Mail of the caregiver" />
+    <input type="submit" id="addnewcare" name="addnewcare" value="Add a care" />
+  </div>
+
+</body>
+
+<script src="script.js"></script>
+
+<script type="module">
+
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+  import { doc, setDoc, getDoc, getDocs, getFirestore, updateDoc, Timestamp, collection, where, query, FieldValue, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; //von gettstarted login
+
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDf7AtHXXKWY2AVxGYc1MkjLiwTRSRbOHY",
+    authDomain: "healthlinkcenterfirestore.firebaseapp.com",
+    projectId: "healthlinkcenterfirestore",
+    storageBucket: "healthlinkcenterfirestore.appspot.com",
+    messagingSenderId: "300995129345",
+    appId: "1:300995129345:web:8927e7ddab6b1e43ec1000",
+    measurementId: "G-V2EGNDGV4K"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider(app);
+  const database = getFirestore(app);
+
+  const useruid = localStorage.getItem('useruid');
+  const useremail = localStorage.getItem('useremail');
+  console.log("Currentuser: " + useremail);  
+
+
+  // Event-Handler für den Button
+  document.getElementById("pulsemeasurement").addEventListener("click", function () {
+    // Hier setzt du den Pfad zur anderen HTML-Seite ein
+    window.location.href = "PulsNotifyBluetoothBangleJS.html";
+  });
+
+  document.getElementById('addnewcare').addEventListener('click', async(event) => {
+        // Hier wird der Code ausgeführt, wenn auf das Element geklickt wird
+        //alert('Button wurde geklickt!');
+        // Fügen Sie hier Ihren eigenen Code hinzu, um auf den Klick zu reagieren
+        //console.log('HALLO');
+      try {
+      // Hier setzt du den Pfad zur anderen HTML-Seite ein
+      //Query!!!!!
+      var emailcare = document.getElementById('emailcare').value;
+      var emailcrypted = encryptEmail(emailcare);
+      var filtereddata;
+      var filtereddata_iscaretaker;
+      console.log("Pflegeperson zuweisen");
+      //console.log("Pflegeperson: " + emailcare + " " + emailcrypted);
+      const querySnapshot = await getDocs(query(collection(database, "users"), where("email", "==", emailcare)));
+      querySnapshot.forEach((getdoc) => {
+      // doc.data() is never undefined for query doc snapshots
+      //console.log(doc.id, " => ", doc.data());
+      filtereddata = getdoc.id;
+      filtereddata_iscaretaker = getdoc.data().isCaretaker;
+      });
+    
+      console.log("Filtered Data IsCaretaker: " + filtereddata_iscaretaker);
+      if(filtereddata_iscaretaker == 1){
+      //Mache neues Array Element 
+      await updateDoc(doc(database, "users", filtereddata), {
+        patients: arrayUnion(useruid)//[useremail] //muss als Array übergeben werden
+      });
+      console.log("Currentuser: " + useremail);  
+      console.log("Filtered Data: " + filtereddata);
+    }else{
+      alert("The caretaker you want to add is not a caretaker or the user does not exist!")
+    }
+        } catch (error) {
+      console.log(error);
+        }
+      });
+     
+      // Finde das Bild-Element
+    var logoImage = document.getElementById('logoImage');
+
+// Füge einen Event-Handler für das 'click'-Event hinzu
+logoImage.addEventListener('click', function () {
+    // Navigiere zur maintaker.html Seite
+    window.location.href = "main.html";
+});
+logoutImage.addEventListener('click', (e) => {
+        signOut(auth).then(() => {
+
+            // Sign-out successful.
+            alert('User logged out');
+            window.location.href = "index.html";
+            }).catch((error) => {
+            // An error happened.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert(errorMessage);
+            });
+        });
+</script>
+
+</html>

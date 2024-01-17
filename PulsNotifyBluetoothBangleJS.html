@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluetooth Example</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="icon" type="index/x-icon" href="/content/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+  <div id="redDiv">
+    <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home" />
+  </div>
+  
+  <h1>Measure your Puls</h1>
+  <button id="connectButton">Search for Bluetooth-Devices</button>
+  <button id="disconnectButton" style="display: none;">Disconnect</button>
+  <div id="deviceInfo"></div>
+
+
+  <div style="width: 60%; height: 30%;">
+    <canvas id="myChart" width="400" height="200"></canvas>
+  </div>
+
+  <input type="submit" id="savesubmit" name="savesubmit" value="Save" />
+
+
+  <!-- Chart -->
+  <script type="module">
+    let device;
+    let server;
+    let myCharacteristic;
+    let pulseValues = [];
+    var startTime;// = Date.now(); //Um die Zeit zu messen
+
+
+
+    //Context für das Chart.js-Canvas-Element
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chartData = {
+      labels: [],
+      datasets: [{
+        label: 'Pulsmessungen',
+        backgroundColor: 'rgba(75, 192, 192, 1)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',  // Farbe der Punkte
+        pointRadius: 5,  // Radius der Punkte in Pixel
+        data: [],
+      }]
+    };
+
+    //Porperties von dem Chart definieren
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: chartData,
+      options: {
+        scales: {
+          x: [{
+            type: 'linear',
+            position: 'bottom',
+            ticks: {
+              stepSize: 1, // Ganzzahliges Intervall auf der x-Achse
+            },
+            afterBuildTicks: function (scale) {
+              scale.ticks = scale.ticks.map(function (value) {
+                return Math.round(value); // Rundet die Sekunden auf ganze Zahlen
+              });
+            }
+          }]
+        }
+      }
+    });
+
+    //-------------- Connect Button ---------------- 
+    document.getElementById('connectButton').addEventListener('click', async () => {
+      try {
+        // Bluetooth-Gerät auswählen
+        device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['generic_access', '0000180d-0000-1000-8000-00805f9b34fb'] // Weight Scale Service
+        });
+
+        console.log('Verbunden mit:', device.name);
+
+        // Versuche, eine Verbindung zum GATT-Server herzustellen
+        server = await device.gatt.connect();
+        console.log('Erfolgreich mit GATT-Server verbunden:', server);
+
+        // Zeige Metadaten und Dienste an
+        displayDeviceInfo(device);
+        await displayServices(server); // Warten Sie, bis die Dienste angezeigt wurden
+
+        // Ändere die Sichtbarkeit der Buttons
+        document.getElementById('connectButton').style.display = 'none';
+        document.getElementById('disconnectButton').style.display = 'block';
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    //-------------- Disconnect Button ----------------
+    document.getElementById('disconnectButton').addEventListener('click', () => {
+      // Trenne die Bluetooth-Verbindung
+      if (device && server) {
+        device.gatt.disconnect();
+        console.log('Bluetooth-Verbindung getrennt.');
+      }
+
+      // Setze die Sichtbarkeit der Buttons zurück
+      document.getElementById('connectButton').style.display = 'block';
+      document.getElementById('disconnectButton').style.display = 'none';
+
+      // Leere die angezeigten Informationen
+      document.getElementById('deviceInfo').innerHTML = '';
+    });
+
+    //-------------- Daten von der BluetoothVerbindung ----------------
+    function displayDeviceInfo(device) {
+      const deviceInfoDiv = document.getElementById('deviceInfo');
+      deviceInfoDiv.innerHTML = `
+        <h2>Geräteinformationen</h2>
+        <p><strong>Name:</strong> ${device.name}</p>
+        <p><strong>ID:</strong> ${device.id}</p>
+        <p><strong>GATT-Server verbunden:</strong> Ja</p>
+      `;
+    }
+
+    //------------- Verbindung aufbauen und Daten anzeigen -----------
+    async function displayServices(server) {
+      const deviceInfoDiv = document.getElementById('deviceInfo');
+      deviceInfoDiv.innerHTML += '<h2>Dienste und Charakteristiken</h2>';
+
+      //SERVICE
+      // Verwende den Weight Scale Service mit der Standard-UUID 0x1805
+      const myService = await server.getPrimaryService('0000180d-0000-1000-8000-00805f9b34fb');
+      const characteristicDiv = document.createElement('div');
+      characteristicDiv.innerHTML = `<p><strong>Service UUID:</strong> ${myService.uuid}</p>`;
+      deviceInfoDiv.appendChild(characteristicDiv);
+
+      //Characteristic
+      // Verwende die Standard-UUID 0x2A9D für die Weight Charakteristik
+      const characteristics = await myService.getCharacteristics();
+      myCharacteristic = characteristics.find(characteristic => characteristic.uuid === '00002a37-0000-1000-8000-00805f9b34fb');
+
+      if (myCharacteristic) {
+        const characteristicDiv2 = document.createElement('div');
+        characteristicDiv2.innerHTML = `<p><strong>Characteristic UUID:</strong> ${myCharacteristic.uuid}</p>`;
+        deviceInfoDiv.appendChild(characteristicDiv2);
+        // Benachrichtigungen für die Charakteristik starten
+        await myCharacteristic.startNotifications().then(_ => {
+          console.log('> Benachrichtigungen gestartet');
+          // Event-Handler für Benachrichtigungen hinzufügen
+          myCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+        });
+      } else {
+        console.error('Charakteristik nicht gefunden.');
+      }
+    }
+
+    //-------------- Event-Handler für Benachrichtigungen (Puls) ----------------
+    function handleCharacteristicValueChanged(event) {
+      let value = event.target.value;
+      let a = [];
+      if (startTime == null)
+        startTime = Date.now();
+
+      for (let i = 0; i < value.byteLength; i++) {
+        a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2));
+      }
+      console.log('> ' + a.join(' '));
+      var hexvalue = a.join(' ');
+      var currentTime = (Date.now() - startTime) / 1000; // Zeit in Sekunden seit dem Start
+      var roundedTime = Math.round(currentTime); // Rundet die Sekunden auf ganze Zahlen
+      var letztenZweiStellen = hexvalue.slice(-2); // Die letzten beiden Stellen des Strings, von der Hexzahl
+      value = parseInt(letztenZweiStellen, 16) // Hexzahl in Dezimalzahl umwandeln
+      if (value !== null) { // Wenn ein Wert vorhanden ist
+        chartData.labels.push(roundedTime); // Zeit in Sekunden seit dem Start
+        chartData.datasets[0].data.push(parseFloat(value)); // Wert in das Chart einfügen
+        pulseValues.push([roundedTime, value]); // Wert in das Array einfügen
+        // Update the chart
+        myChart.update();
+      }
+    }
+
+    // <!-- FIREBASE CONNECTION -->
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { doc, setDoc, getDoc, getDocs, getFirestore, updateDoc, Timestamp, collection, where, query, FieldValue, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; //von gettstarted login
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDf7AtHXXKWY2AVxGYc1MkjLiwTRSRbOHY",
+      authDomain: "healthlinkcenterfirestore.firebaseapp.com",
+      projectId: "healthlinkcenterfirestore",
+      storageBucket: "healthlinkcenterfirestore.appspot.com",
+      messagingSenderId: "300995129345",
+      appId: "1:300995129345:web:8927e7ddab6b1e43ec1000",
+      measurementId: "G-V2EGNDGV4K"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider(app);
+    const database = getFirestore(app);
+
+    const useruid = localStorage.getItem('useruid');
+    const useremail = localStorage.getItem('useremail');
+
+    const user = auth.currentUser;
+
+    var date;
+
+    //TODO
+    //date sollte Datum in db zeigen aber es zeigt nur "date"
+    //user uiid wird im localstorage gespeichert ! funktioniert
+    savesubmit.addEventListener('click', async (e) => {
+      signOut(auth).then(async () => {
+
+        date = new Date();
+        //var aktuellesDatumString = date.toLocaleString();
+        var day = ("0" + date.getDate()).slice(-2);
+        var month = ("0" + (date.getMonth() + 1)).slice(-2); // Monate sind nullbasiert, daher +1
+        var year = date.getFullYear();
+        var hour = ("0" + date.getHours()).slice(-2);
+        var minute = ("0" + date.getMinutes()).slice(-2);
+        console.log("Datum: " + day + "_" + month + "_" + year + "_" + hour + ":" + minute);
+
+        var myVar = localStorage.getItem('useruid');
+        console.log("USER: " + myVar);
+        var date = day + "_" + month + "_" + year + "_" + hour + "_" + minute;
+        var measureObject = {
+          date: date,
+          pulse: pulseValues
+        };
+        const newpulse = doc(database, "users", myVar);
+        const jsonString = JSON.stringify(measureObject);
+        console.log(jsonString);
+        const arr = JSON.parse(jsonString)
+        console.log(arr);
+        await updateDoc(newpulse, {
+          //puls_dates: arrayUnion(`${time}`),
+          pulses: arrayUnion(jsonString)//[[time, pulseValues]] nested arrays gehen leider nicht $jsoString}
+        });
+
+        // Data saveds
+        alert('Data saved');
+      }).catch((error) => {
+        // An error happened.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        alert(errorMessage);
+      });
+    });
+
+    /*
+    logout.addEventListener('click', (e) => {
+    signOut(auth).then(() => {
+
+        // Sign-out successful.
+        alert('User logged out');
+        }).catch((error) => {
+        // An error happened.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        alert(errorMessage);
+        });
+    });
+*/
+// Finde das Bild-Element
+var logoImage = document.getElementById('logoImage');
+
+// Füge einen Event-Handler für das 'click'-Event hinzu
+logoImage.addEventListener('click', function () {
+    // Navigiere zur maintaker.html Seite
+    window.location.href = 'main.html';
+});
+
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,223 @@
+<html>
+    <head>
+
+        <title>
+
+        </title>  
+        <style>
+            body {
+              font-family: Arial, sans-serif;
+            }
+            label {
+              display: block;
+              margin-bottom: 5px;
+            }
+            input[type="range"] {
+              width: 30px;
+            }
+
+          </style>
+    </head>
+    <body>
+        <div id="login-box">
+            <div class="left">
+                <h1> Sign up</h1>
+
+                <input type="text" id="email" name="email" placeholder="Enter your E-mail"/>
+                <input type="password" id="password" name="password" placeholder="Enter your Password"/>
+
+                <input type="submit" id="login" name="login" value="Login" />
+                <input type="submit" id="sighUp" name="singup_submit" value="Sign up" />
+               <!-- <input type="submit" id="logout" name="logout" value="logout" /> -->
+            </div>
+
+            <div class="right">
+                <span class="loginwith">Sign in with social network</span>
+               <!-- <button class="social-signin facebook">Login with Facebook</button> -->
+                <!--<button class="social-signin twitter">Login with Twitter</button> -->
+                <input type="submit" id="socialsigningoogle" name="socialsigningoogle" value="Google Login" />
+            </div>
+
+            <!-- Are you a caretaker slider -->
+            <div>
+                <h2>Are you a caretaker?</h2>
+                <label>
+                <span>Choose an option:</span>No
+                <input type="range" min="0" max="1" value="0" step="1" id="yesNoSlider">Yes
+                </label>
+            </div>
+          
+        </div>
+    </body>
+    <script src="script.js"></script>
+
+
+    <script type="module">
+         var slider = document.getElementById('yesNoSlider');
+        var selectedOptionText = document.getElementById('selectedOption');
+        var isCaretakerValue = 0;
+
+        slider.addEventListener('input', function() {
+        var selectedValue = parseInt(slider.value, 10);
+
+        if (selectedValue === 0) {
+            isCaretakerValue = 0;
+            console.log('Selected Option: No' + isCaretakerValue);
+        } else {
+            isCaretakerValue = 1; 
+            console.log('Selected Option: Yes'+ isCaretakerValue);
+           }
+        });
+
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, onValue, set, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; //von gettstarted login
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyDSJ9Ati6aTHQ7VtTmcvzvEdwO-_yTRebY",
+          authDomain: "healthlinkcenterlogin.firebaseapp.com",
+          databaseURL: "https://healthlinkcenterlogin-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "healthlinkcenterlogin",
+          storageBucket: "healthlinkcenterlogin.appspot.com",
+          messagingSenderId: "667953362536",
+          appId: "1:667953362536:web:576c3c51c3acccb692addd",
+          measurementId: "G-WXHG105MJS"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        //const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider(app);
+        
+
+        sighUp.addEventListener('click', (e) => {
+
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+
+
+            var cryptedEmail = encryptEmail(email);
+
+            createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+            // Signed up 
+            const user = userCredential.user;
+
+            set(ref(database, 'users/' + cryptedEmail),{
+                email: email, //kein Password, soll nicht in DB gespeichert werden
+                isCaretaker: isCaretakerValue,
+            })
+            alert('user created!');
+            localStorage.setItem('useruid', user.uid);
+            localStorage.setItem('useremail', email);
+            if (isCaretakerValue === 0) { //No
+                    location.replace("main.html");
+                } else { 
+                    location.replace("main_caretaker.html");
+                }
+            })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert(errorMessage);
+
+            });
+        
+        });
+            
+
+        login.addEventListener('click', (e) => {
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+
+                const dt = new Date(); //Date damit man sieht wann der letzte Login war
+                update(ref(database, 'users/' + user.uid),{
+                last_login: dt,
+                
+                })
+                alert('User logged in!');
+                if (isCaretakerValue === 0) { //No
+                    location.replace("main.html");
+                } else { 
+                    location.replace("main_caretaker.html");
+                }
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                alert(errorMessage);
+
+            });
+
+        });
+
+        const user = auth.currentUser;
+        onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // User is signed in, see docs for a list of available properties
+            // https://firebase.google.com/docs/reference/js/auth.user
+            const uid = user.uid;
+            //Wenn sich der Benutzer angemeldet hat, kann man hier Code geben wenn notwendig
+            // ...
+        } else {
+            // Wenn sich der User abmeldet dann kann man hier Code geben was passieren soll
+            // ...
+        }
+        });
+
+        /*logout.addEventListener('click', (e) => {
+        signOut(auth).then(() => {
+
+            // Sign-out successful.
+            alert('User logged out');
+            }).catch((error) => {
+            // An error happened.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert(errorMessage);
+            });
+        });
+        */
+
+        //with google
+        socialsigningoogle.addEventListener('click', (e) => {
+            signInWithPopup(auth, provider)
+        .then((result) => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken;
+            // The signed-in user info.
+            const user = result.user;
+            // IdP data available using getAdditionalUserInfo(result)
+            //alert('Google Login');
+            location.replace("PulsNotifyBluetoothBangleJS.html");
+        }).catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // The email of the user's account used.
+            const email = error.customData.email;
+            // The AuthCredential type that was used.
+            const credential = GoogleAuthProvider.credentialFromError(error);
+            
+            alert(errorMessage);
+        });
+
+        });
+        
+      </script>
+
+</html>

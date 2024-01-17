@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email-Ansicht</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="index/x-icon" href="/content/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <div id="redDiv">
+        <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home"/>
+    </div>
+    <h1>Messungen-Ansicht</h1>
+
+    <ul id="measurementList">
+        <!-- Here the measurement values will be inserted -->
+    </ul>
+
+    <div id="selectedMeasurement">
+        <!-- Display the selected measurement puls values here -->
+        <canvas id="myScatterChart" width="200" height="50"></canvas>
+    </div>
+
+</body>
+
+<script type="module">
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { doc, setDoc, getDoc, getDocs, getFirestore, updateDoc, Timestamp, collection, where, query, FieldValue, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; //von gettstarted login
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyDf7AtHXXKWY2AVxGYc1MkjLiwTRSRbOHY",
+        authDomain: "healthlinkcenterfirestore.firebaseapp.com",
+        projectId: "healthlinkcenterfirestore",
+        storageBucket: "healthlinkcenterfirestore.appspot.com",
+        messagingSenderId: "300995129345",
+        appId: "1:300995129345:web:8927e7ddab6b1e43ec1000",
+        measurementId: "G-V2EGNDGV4K"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider(app);
+    const database = getFirestore(app);
+
+    const useruid = localStorage.getItem('useruid');
+    const useremail = localStorage.getItem('useremail');
+    //console.log("Currentuser: " + useremail);      
+
+    var emailurl;
+
+    // Funktion zum Extrahieren der E-Mail aus der URL und Anzeigen auf der Seite
+    var urlParams = new URLSearchParams(window.location.search);
+    var email = urlParams.get('id');
+
+    if (email) {
+        var emailElement = document.createElement("p");
+        emailElement.textContent = "E-Mail: " + email;
+        document.body.appendChild(emailElement);
+        emailurl = email;
+    } else {
+        // Fallback, wenn keine E-Mail in der URL gefunden wurde
+        var errorElement = document.createElement("p");
+        errorElement.textContent = "Keine E-Mail gefunden.";
+        document.body.appendChild(errorElement);
+    }
+
+
+
+    console.log("Email: " + emailurl);
+    var filtereddatauid;
+    var measurements;
+    //console.log("Pflegeperson: " + emailcare + " " + emailcrypted);
+    const querySnapshot = await getDocs(query(collection(database, "users"), where("email", "==", emailurl)));
+    querySnapshot.forEach((getdoc) => {
+        // doc.data() is never undefined for query doc snapshots
+        //console.log(doc.id, " => ", doc.data());
+        filtereddatauid = getdoc.id;
+        measurements = getdoc.data().pulses;
+    });
+
+    console.log("UID: " + filtereddatauid);
+    console.log("Measurements: " + measurements.length);
+
+    let measurementArray = [];
+    measurements.forEach((measurement) => {
+        measurementArray.push(JSON.parse(measurement));
+    });
+
+    console.log(measurementArray[0].date);
+
+    console.log(measurementArray[0].pulse);
+
+
+    //----------------------------------------------------------------------------------------Liste
+    // Methode zum Befüllen der Liste
+    function fillList() {
+        // Referenz zur UL-Element
+        var measurementListElement = document.getElementById("measurementList");
+
+        // Beispiel: Daten, die Sie in die Liste einfügen möchten
+        //var data = ["Element 1", "Element 2", "Element 3", "Element 4", "Element 5"];
+
+        var i = 0;
+        // Iteriere durch die Daten und erstelle LI-Elemente
+        measurementArray.forEach(function (item) {
+            /* // Erstelle ein LI-Element
+             var listItem = document.createElement("li");
+ 
+             // Setze den Text des LI-Elements
+             listItem.textContent = item.date;
+ 
+             // Füge das LI-Element zur UL-Liste hinzu
+             myListElement.appendChild(listItem);*/
+
+            var listItem = document.createElement("li");
+            var button = document.createElement("button");
+
+            // Formatieren des Datums im gewünschten Stil
+            var formattedDate = formatDate(item.date);
+
+            // Setze den Button-Text
+            button.textContent = formattedDate;
+            button.setAttribute("id", i);
+
+
+            button.addEventListener('click', function () {
+                // Überprüfe, ob bereits ein Diagramm vorhanden ist, und zerstöre es
+                var canvas = document.getElementById('myScatterChart');
+                var ctx = canvas.getContext('2d');
+
+                // Überprüfe, ob bereits ein Diagramm vorhanden ist, und zerstöre es
+                var existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                //console.log(button.getAttribute("id"));
+                console.log("HAAA " + measurementArray[button.getAttribute("id")].date + " PULSWERT: " + measurementArray[button.getAttribute("id")].pulse)
+                // Extrahiere die X- und Y-Werte in separate Arrays
+                var xValues = measurementArray[button.getAttribute("id")].pulse.map(function (point) {
+                    return point[0];
+                });
+
+                var yValues = measurementArray[button.getAttribute("id")].pulse.map(function (point) {
+                    return point[1];
+                });
+
+                ;
+
+
+                // Konfiguration für das Scatter-Plot-Diagramm
+                var config = {
+                    type: 'line',
+                    data: {
+                        labels: 'Scatter Dataset',
+                        datasets: [{
+                            label: 'Scatter Dataset',
+                            data: measurementArray[button.getAttribute("id")].pulse.map(function (point) {
+                                return { x: point[0], y: point[1] };
+                            }),
+                            backgroundColor: 'rgba(75, 192, 192, 1)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            pointBackgroundColor: 'rgba(75, 192, 192, 1)',  // Farbe der Punkte
+                            pointRadius: 5,  // Radius der Punkte in Pixel
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom'
+                            },
+                            y: {
+                                type: 'linear',
+                                position: 'left'
+                            }
+                        }
+                    }
+                };
+
+                // Erstelle ein neues Scatter-Plot-Diagramm mit der Konfiguration
+                var myScatterChart = new Chart(ctx, config);
+
+
+
+            });
+            i++;
+
+            // Füge den Button zum Listenelement hinzu
+            listItem.appendChild(button);
+
+            // Füge das Listenelement zur Liste hinzu
+            measurementListElement.appendChild(listItem);
+        });
+    }
+
+    // Rufe die Methode zum Befüllen der Liste auf
+    fillList();
+
+    // Funktion zum Formatieren des Datums
+    function formatDate(dateString) {
+        var parts = dateString.split('_');
+        return parts[0] + "." + parts[1] + "." + parts[2] + " " + parts[3] + ":" + parts[4];
+    }
+
+    // Finde das Bild-Element
+    var logoImage = document.getElementById('logoImage');
+
+    // Füge einen Event-Handler für das 'click'-Event hinzu
+    logoImage.addEventListener('click', function () {
+        // Navigiere zur maintaker.html Seite
+        window.location.href = 'main_caretaker.html';
+    });
+
+
+</script>
+
+</html>
