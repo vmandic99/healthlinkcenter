@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <script src="script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bluetooth Example</title>
@@ -12,8 +13,10 @@
 
 <body>
   <div id="redDiv">
-    <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home" />
-  </div>
+    <a href="main.html" title="Home">
+        <img id="logoImage" src="./content/homeimg.png" alt="Logo" title="Home" />
+    </a>
+</div>
   
   <h1>Measure your Puls</h1>
   <button id="connectButton">Search for Bluetooth-Devices</button>
@@ -35,7 +38,7 @@
     let myCharacteristic;
     let pulseValues = [];
     var startTime;// = Date.now(); //Um die Zeit zu messen
-
+    var timestamp;
 
 
     //Context für das Chart.js-Canvas-Element
@@ -96,6 +99,7 @@
         // Ändere die Sichtbarkeit der Buttons
         document.getElementById('connectButton').style.display = 'none';
         document.getElementById('disconnectButton').style.display = 'block';
+        timestamp = Date.now();
       } catch (error) {
         console.error(error);
       }
@@ -179,7 +183,9 @@
       if (value !== null) { // Wenn ein Wert vorhanden ist
         chartData.labels.push(roundedTime); // Zeit in Sekunden seit dem Start
         chartData.datasets[0].data.push(parseFloat(value)); // Wert in das Chart einfügen
-        pulseValues.push([roundedTime, value]); // Wert in das Array einfügen
+        pulseValues.push([Date. now(), value]); // Wert in das Array einfügen
+       // pulseValues.push([roundedTime, value]); // Wert in das Array einfügen
+
         // Update the chart
         myChart.update();
       }
@@ -229,6 +235,7 @@
       signOut(auth).then(async () => {
 
         date = new Date();
+        
         //var aktuellesDatumString = date.toLocaleString();
         var day = ("0" + date.getDate()).slice(-2);
         var month = ("0" + (date.getMonth() + 1)).slice(-2); // Monate sind nullbasiert, daher +1
@@ -241,7 +248,7 @@
         console.log("USER: " + myVar);
         var date = day + "_" + month + "_" + year + "_" + hour + "_" + minute;
         var measureObject = {
-          date: date,
+          date: timestamp,
           pulse: pulseValues
         };
         const newpulse = doc(database, "users", myVar);
@@ -278,14 +285,6 @@
         });
     });
 */
-// Finde das Bild-Element
-var logoImage = document.getElementById('logoImage');
-
-// Füge einen Event-Handler für das 'click'-Event hinzu
-logoImage.addEventListener('click', function () {
-    // Navigiere zur maintaker.html Seite
-    window.location.href = 'main.html';
-});
 
   </script>
 

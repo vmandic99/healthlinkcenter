@@ -1,6 +1,7 @@
 <html>
 
 <head>
+  <script src="script.js"></script>
 
   <title>
     MainPage
@@ -11,29 +12,38 @@
 
 <body>
   <div id="redDiv">
-    <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home"/>
-    <img id="logoutImage" src="/content/LogOut.png" alt="LogOut" title="Logout"/>
-</div>
+    <a href="main.html" title="Home">
+      <img id="logoImage" src="./content/homeimg.png" alt="Logo" title="Home" />
+    </a>
+    <button id="logoutButton" title="Logout">
+      <img src="./content/LogOut.png" alt="LogOut" title="Logout" />
+    </button>
+  </div>
 
   <h1 id="welcometext">Welcome!</h1>
-  <p> Please choose your operation you would like to take! :D</p>
+  <p> Please choose your operation you would like to take!</p>
   <input type="submit" id="pulsemeasurement" name="pulsemeasurement" value="Measure your pulse" />
   <div>
     <p>Authorize a caregiver to have an overview of your measurements.</p>
     <input type="text" id="emailcare" name="emailcare" placeholder="Enter E-Mail of the caregiver" />
     <input type="submit" id="addnewcare" name="addnewcare" value="Add a care" />
+    <br>
+    <h2>Your assigned caretakers: </h2>
+    <ul id="caretakerList">
+      <!-- Hier werden die E-Mail-Adressen der Patienten eingefügt -->
+    </ul>
+
   </div>
 
 </body>
 
-<script src="script.js"></script>
 
 <script type="module">
 
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-  import { doc, setDoc, getDoc, getDocs, getFirestore, updateDoc, Timestamp, collection, where, query, FieldValue, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { doc, setDoc, getDoc, getDocs, getFirestore, updateDoc, Timestamp, collection, where, query, FieldValue, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; //von gettstarted login
 
   // TODO: Add SDKs for Firebase products that you want to use
@@ -60,8 +70,7 @@
 
   const useruid = localStorage.getItem('useruid');
   const useremail = localStorage.getItem('useremail');
-  console.log("Currentuser: " + useremail);  
-
+  console.log("Currentuser: " + useremail);
 
   // Event-Handler für den Button
   document.getElementById("pulsemeasurement").addEventListener("click", function () {
@@ -69,12 +78,12 @@
     window.location.href = "PulsNotifyBluetoothBangleJS.html";
   });
 
-  document.getElementById('addnewcare').addEventListener('click', async(event) => {
-        // Hier wird der Code ausgeführt, wenn auf das Element geklickt wird
-        //alert('Button wurde geklickt!');
-        // Fügen Sie hier Ihren eigenen Code hinzu, um auf den Klick zu reagieren
-        //console.log('HALLO');
-      try {
+  document.getElementById('addnewcare').addEventListener('click', async (event) => {
+    // Hier wird der Code ausgeführt, wenn auf das Element geklickt wird
+    //alert('Button wurde geklickt!');
+    // Fügen Sie hier Ihren eigenen Code hinzu, um auf den Klick zu reagieren
+    //console.log('HALLO');
+    try {
       // Hier setzt du den Pfad zur anderen HTML-Seite ein
       //Query!!!!!
       var emailcare = document.getElementById('emailcare').value;
@@ -85,49 +94,151 @@
       //console.log("Pflegeperson: " + emailcare + " " + emailcrypted);
       const querySnapshot = await getDocs(query(collection(database, "users"), where("email", "==", emailcare)));
       querySnapshot.forEach((getdoc) => {
-      // doc.data() is never undefined for query doc snapshots
-      //console.log(doc.id, " => ", doc.data());
-      filtereddata = getdoc.id;
-      filtereddata_iscaretaker = getdoc.data().isCaretaker;
+        // doc.data() is never undefined for query doc snapshots
+        //console.log(doc.id, " => ", doc.data());
+        filtereddata = getdoc.id;
+        filtereddata_iscaretaker = getdoc.data().isCaretaker;
       });
-    
+
       console.log("Filtered Data IsCaretaker: " + filtereddata_iscaretaker);
-      if(filtereddata_iscaretaker == 1){
-      //Mache neues Array Element 
-      await updateDoc(doc(database, "users", filtereddata), {
-        patients: arrayUnion(useruid)//[useremail] //muss als Array übergeben werden
-      });
-      console.log("Currentuser: " + useremail);  
-      console.log("Filtered Data: " + filtereddata);
-    }else{
-      alert("The caretaker you want to add is not a caretaker or the user does not exist!")
-    }
-        } catch (error) {
+      if (filtereddata_iscaretaker == 1) {
+        //Mache neues Array Element 
+        await updateDoc(doc(database, "users", filtereddata), {
+          patients: arrayUnion(useruid)//[useremail] //muss als Array übergeben werden
+        });
+        await updateDoc(doc(database, "users", useruid), {
+          caretakers: arrayUnion(filtereddata)//[useremail] //muss als Array übergeben werden
+        });
+        console.log("Currentuser: " + useremail);
+        console.log("Filtered Data: " + filtereddata)
+        displaySearchResults();
+        emailcare.textContent = "";
+      } else {
+        alert("The caretaker you want to add is not a caretaker or the user does not exist!")
+      }
+    } catch (error) {
       console.log(error);
+    }
+  });
+  var emailListElement = document.getElementById("caretakerList");
+
+
+  // Funktion zum Anzeigen der Suchergebnisse
+  async function displaySearchResults(results) {
+
+    emailListElement.innerHTML = ""; // Leere die vorhandene Liste
+
+    var docRef = doc(database, "users", useruid);
+    var docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      console.log("Caretaker Document data:", docSnap.data());
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such document!");
+    }
+    //console.log("Patients: " + docSnap.data().patients[0]);
+
+
+    if(docSnap.data().caretakers == undefined){
+      console.log("Keine Pflegepersonen");
+      return;
+    }
+    // Array für Promises
+    var promises = [];
+    var emailArray = [];
+    // Durchlaufe die Patienten mit IDs und sammle ihre E-Mails
+    docSnap.data().caretakers.forEach((caretaker) => {
+      var docRef = doc(database, "users", caretaker);
+      var promise = getDoc(docRef)
+        .then((docSnap2) => {
+          console.log("Caretaker: " + docSnap2.data().email);
+          emailArray.push([docSnap2.id,docSnap2.data().email]);
+        })
+        .catch((error) => {
+          console.error("Fehler beim Abrufen von Dokument", error);
+        });
+
+      promises.push(promise);
+    });
+
+    // Warte darauf, dass alle Promises abgeschlossen sind
+    await Promise.all(promises);
+    console.log("EMAIL ARRAY CARETAKER   " + emailArray);
+
+
+
+    emailArray.forEach(async function (email) {
+      var listItem = document.createElement("li");
+
+      // Erstelle einen Button
+      var deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", function () {
+        // Bestätigungs-Alert anzeigen
+        var confirmDelete = window.confirm("Are you sure you want to unassign the caretaker " + email[1] + "?");
+
+        // Wenn der Benutzer "OK" auswählt, lösche die E-Mail-Adresse
+        if (confirmDelete) {
+          console.log("E-Mail löschen: " + email[1]);
+    
+          //Patient
+          var collectionRef = doc(database, "users", useruid);
+    
+          updateDoc(collectionRef, {
+          //puls_dates: arrayUnion(`${time}`),
+          caretakers: arrayRemove(email[0])//[[time, pulseValues]] nested arrays gehen leider nicht $jsoString}
+          });
+          console.log(collectionRef);
+
+          //Caretaker
+          collectionRef = doc(database, "users", email[0]);
+          updateDoc(collectionRef, {
+          //puls_dates: arrayUnion(`${time}`),
+          patients: arrayRemove(useruid)//[[time, pulseValues]] nested arrays gehen leider nicht $jsoString}
+          });
+
+
+          listItem.remove(); // Löscht das li-Element aus der Liste
         }
       });
-     
-      // Finde das Bild-Element
-    var logoImage = document.getElementById('logoImage');
 
-// Füge einen Event-Handler für das 'click'-Event hinzu
-logoImage.addEventListener('click', function () {
-    // Navigiere zur maintaker.html Seite
-    window.location.href = "main.html";
-});
-logoutImage.addEventListener('click', (e) => {
-        signOut(auth).then(() => {
+      // Füge den Button zum Listenelement hinzu
 
-            // Sign-out successful.
-            alert('User logged out');
-            window.location.href = "index.html";
-            }).catch((error) => {
-            // An error happened.
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            alert(errorMessage);
-            });
-        });
+      // Füge den Textinhalt (E-Mail-Adresse) zum Listenelement hinzu
+      listItem.appendChild(document.createTextNode(email[1]));
+      listItem.appendChild(deleteButton);
+
+
+      // Füge das Listenelement zur Liste hinzu
+      emailListElement.appendChild(listItem);
+    });
+  }
+
+  displaySearchResults();
+
+
+  // Event-Handler-Funktion
+  function handleLogout() {
+    // Füge hier den Code für die Logout-Logik hinzu
+    signOut(auth).then(() => {
+
+      // Sign-out successful.
+      alert('User logged out');
+      localStorage.clear();
+      window.location.href = "index.html";
+    }).catch((error) => {
+      // An error happened.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert(errorMessage);
+    });
+  }
+
+  // Das Button-Element auswählen
+  var logoutButton = document.getElementById('logoutButton');
+
+  // Event-Handler dem Button hinzufügen
+  logoutButton.addEventListener('click', handleLogout);
 </script>
 
 </html>

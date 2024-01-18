@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <script src="script.js"></script>
 
     <title>
         CaretakerMainPage
@@ -11,8 +12,12 @@
 
 <body>
     <div id="redDiv">
-        <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home"/>
-        <img id="logoutImage" src="/content/LogOut.png" alt="LogOut" title="Logout"/>
+        <a href="main_caretaker.html" title="Home">
+            <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home" />
+        </a>
+        <button id="logoutButton" title="Logout">
+            <img src="/content/LogOut.png" alt="LogOut" title="Logout" />
+          </button>
     </div>
     <h1>Welcome!</h1>
     <p>Your assigned patients</p>
@@ -23,7 +28,6 @@
     </ul>
 
 </body>
-<script src="script.js"></script>
 
 <script type="module">
     var assignedPatients = [];//= ["email1@example.com", "email2@example.com", "email3@example.com"];
@@ -168,28 +172,30 @@
         displaySearchResults(emailArray);
     }
 
-    // Finde das Bild-Element
-    var logoImage = document.getElementById('logoImage');
+   
 
-// Füge einen Event-Handler für das 'click'-Event hinzu
-logoImage.addEventListener('click', function () {
-    // Navigiere zur maintaker.html Seite
-    window.location.href = "main_caretaker.html";
-});
+    // Event-Handler-Funktion
+  function handleLogout() {
+    // Füge hier den Code für die Logout-Logik hinzu
+    signOut(auth).then(() => {
 
-logoutImage.addEventListener('click', (e) => {
-        signOut(auth).then(() => {
+      // Sign-out successful.
+      alert('User logged out');
+      localStorage.clear();
+      window.location.href = "index.html";
+    }).catch((error) => {
+      // An error happened.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert(errorMessage);
+    });
+  }
 
-            // Sign-out successful.
-            alert('User logged out');
-            window.location.href = "index.html";
-            }).catch((error) => {
-            // An error happened.
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            alert(errorMessage);
-            });
-        });
+  // Das Button-Element auswählen
+  var logoutButton = document.getElementById('logoutButton');
+
+  // Event-Handler dem Button hinzufügen
+  logoutButton.addEventListener('click', handleLogout);
 </script>
 
 </html>

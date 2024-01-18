@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="script.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email-Ansicht</title>
@@ -12,9 +13,12 @@
 
 <body>
     <div id="redDiv">
-        <img id="logoImage" src="/content/homeimg.png" alt="Logo" title="Home"/>
+        <a href="main_caretaker.html" title="Home">
+            <img id="logoImage" src="./content/homeimg.png" alt="Logo" title="Home" />
+          </a>    
     </div>
     <h1>Messungen-Ansicht</h1>
+    <p>Hier finden Sie die Pulsmessungen des jeweiligen Patienten. Klicken Sie auf ein Button um die Messung grafisch des jeweiligen Zeitpunktes zu sehen.</p>
 
     <ul id="measurementList">
         <!-- Here the measurement values will be inserted -->
@@ -69,7 +73,7 @@
 
     if (email) {
         var emailElement = document.createElement("p");
-        emailElement.textContent = "E-Mail: " + email;
+        emailElement.textContent = "Ausgewählter Patient: " + email;
         document.body.appendChild(emailElement);
         emailurl = email;
     } else {
@@ -100,10 +104,11 @@
     measurements.forEach((measurement) => {
         measurementArray.push(JSON.parse(measurement));
     });
+    if(measurementArray.length > 0){
+        console.log("Erste Messung: " + measurementArray[0].date);
+    }
 
-    console.log(measurementArray[0].date);
-
-    console.log(measurementArray[0].pulse);
+    
 
 
     //----------------------------------------------------------------------------------------Liste
@@ -116,6 +121,13 @@
         //var data = ["Element 1", "Element 2", "Element 3", "Element 4", "Element 5"];
 
         var i = 0;
+        if(measurementArray.length == 0){
+            var listItem = document.createElement("li");
+            listItem.textContent = "Dieser Patient hat Messungen durchgeführt!";
+            listItem.style.color = "red";
+            listItem.style.fontWeight = "bold";
+            measurementListElement.appendChild(listItem);
+        }
         // Iteriere durch die Daten und erstelle LI-Elemente
         measurementArray.forEach(function (item) {
             /* // Erstelle ein LI-Element
@@ -131,10 +143,22 @@
             var button = document.createElement("button");
 
             // Formatieren des Datums im gewünschten Stil
-            var formattedDate = formatDate(item.date);
+            //var formattedDate = formatDate(item.date);
 
             // Setze den Button-Text
-            button.textContent = formattedDate;
+            const datum = new Date(item.date);
+
+            const jahr = datum.getFullYear();
+            const monat = datum.getMonth() + 1;
+            const tag = datum.getDate();
+            const stunde = datum.getHours();
+            const minute = datum.getMinutes();
+            const sekunde = datum.getSeconds();
+            //console.log("Timestamp:      " + point[0]);
+            // console.log(`${stunde}:${minute}:${sekunde}`);
+            const formatierteSekunde = sekunde < 10 ? `0${sekunde}` : sekunde;
+
+            button.textContent = `${tag}.${monat}.${jahr}  ${stunde}:${minute}:${formatierteSekunde}`;
             button.setAttribute("id", i);
 
 
@@ -151,8 +175,19 @@
                 //console.log(button.getAttribute("id"));
                 console.log("HAAA " + measurementArray[button.getAttribute("id")].date + " PULSWERT: " + measurementArray[button.getAttribute("id")].pulse)
                 // Extrahiere die X- und Y-Werte in separate Arrays
+                var xValues = [];
                 var xValues = measurementArray[button.getAttribute("id")].pulse.map(function (point) {
-                    return point[0];
+                    const datum = new Date(point[0]);
+
+                    const stunde = datum.getHours();
+                    const minute = datum.getMinutes();
+                    const sekunde = datum.getSeconds();
+                    //console.log("Timestamp:      " + point[0]);
+                    // console.log(`${stunde}:${minute}:${sekunde}`);
+                    const formatierteSekunde = sekunde < 10 ? `0${sekunde}` : sekunde;
+
+                    xValues.push(`${stunde}:${minute}:${formatierteSekunde}`);
+                    return `${stunde}:${minute}:${formatierteSekunde}`;
                 });
 
                 var yValues = measurementArray[button.getAttribute("id")].pulse.map(function (point) {
@@ -168,7 +203,7 @@
                     data: {
                         labels: 'Scatter Dataset',
                         datasets: [{
-                            label: 'Scatter Dataset',
+                            label: 'Pulsmessung vom ' + button.textContent + ' Uhr',
                             data: measurementArray[button.getAttribute("id")].pulse.map(function (point) {
                                 return { x: point[0], y: point[1] };
                             }),
@@ -181,12 +216,20 @@
                     options: {
                         scales: {
                             x: {
-                                type: 'linear',
-                                position: 'bottom'
+                                type: 'category', // Kategorie-Achse für Textwerte
+                                labels: xValues,// Die Textwerte für die X-Achse
+                                title: {
+                                    display: true,
+                                    text: 'Zeit (hh:mm:ss)' // Beschriftung für die X-Achse
+                                }
                             },
                             y: {
                                 type: 'linear',
-                                position: 'left'
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Puls (bpm)' // Beschriftung für die X-Achse
+                                }
                             }
                         }
                     }
@@ -206,6 +249,7 @@
             // Füge das Listenelement zur Liste hinzu
             measurementListElement.appendChild(listItem);
         });
+    
     }
 
     // Rufe die Methode zum Befüllen der Liste auf
@@ -217,15 +261,7 @@
         return parts[0] + "." + parts[1] + "." + parts[2] + " " + parts[3] + ":" + parts[4];
     }
 
-    // Finde das Bild-Element
-    var logoImage = document.getElementById('logoImage');
-
-    // Füge einen Event-Handler für das 'click'-Event hinzu
-    logoImage.addEventListener('click', function () {
-        // Navigiere zur maintaker.html Seite
-        window.location.href = 'main_caretaker.html';
-    });
-
+    
 
 </script>
 

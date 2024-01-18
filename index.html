@@ -10,11 +10,14 @@
 
 <body>
     <div id="redDiv">
-        <img src="/content/homeimg.png" alt="Logo" />
+        <a href="index.html" title="Home">
+            <img id="logoImage" src="./content/homeimg.png" alt="Logo" title="Home" />
+        </a>
+
     </div>
     <div id="login-box">
         <div class="left">
-            <h1> Sign up</h1>
+            <h1>Login</h1>
 
             <input type="text" id="email" name="email" placeholder="Enter your E-mail" />
             <input type="password" id="password" name="password" placeholder="Enter your Password" />
@@ -32,7 +35,7 @@
         </div>
 
         <!-- Are you a caretaker slider -->
-        <div>
+        <div style="display: none;">
             <h2>Are you a caretaker?</h2>
             <label>
                 <span>Choose an option:</span>No
@@ -42,7 +45,6 @@
 
     </div>
 </body>
-<script src="script.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -124,53 +126,36 @@
 
     sighUp.addEventListener('click', (e) => {
 
-        var email = document.getElementById('email').value;
-        var password = document.getElementById('password').value;
+        window.location.href = "signup.html";
 
-
-        var cryptedEmail = encryptEmail(email);
-
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Signed up 
-                const user = userCredential.user;
-
-                if (isCaretakerValue == false) { //No
-                    setDoc(doc(database, "users", user.uid), {
-                        email: email,
-                        isCaretaker: isCaretakerValue,
-                        pulses: arrayUnion()
-                    }).then(() => { //then ist wichtig, sonst wird der code nicht ausgeführt
-                        alert('User logged in!');
-                        location.replace("main.html");
-                    });
-                } else if (isCaretakerValue == true) {
-                    setDoc(doc(database, "users", user.uid), {
-                        email: email,
-                        isCaretaker: isCaretakerValue,
-                        patients: arrayUnion()
-                    }).then(() => { //then ist wichtig, sonst wird der code nicht ausgeführt
-                        alert('Caretaker logged in!');
-                        location.replace("main_caretaker.html");
-                    });
-                }
-
-                localStorage.setItem('useruid', user.uid);
-                localStorage.setItem('useremail', email);
-                /*if (isCaretakerValue === 0) { //No
-                    location.replace("main.html");
-                } else {
-                    location.replace("main_caretaker.html");
-                }*/
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                alert(errorMessage);
-
-            });
     });
-
+    /*
+        async function getUserData(userId) {
+            try {
+                const docRef = doc(database, "users", userId);
+                const docSnap = await getDoc(docRef);
+    
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+    
+                    const isCaretakerValue = userData.isCaretaker;
+    
+                    console.log("User data:", {
+                        email: userData.email,
+                        last_login: userData.last_login,
+                        isCaretaker: isCaretakerValue,
+                    });
+    
+                    // Hier können Sie mit isCaretakerValue weiterarbeiten
+                } else {
+                    console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error getting user data:", error);
+            }
+        }
+    
+    */
     login.addEventListener('click', async (e) => {
         try {
             var email = document.getElementById('email').value;
