@@ -18,6 +18,14 @@
     <div id="login-box">
         <div class="left">
             <h1> Sign up</h1>
+            <!-- Are you a caretaker slider -->
+            <div>
+                <h2>Are you a caretaker?</h2>
+                <label>
+                    No
+                    <input type="range" min="0" max="1" value="0" step="1" id="yesNoSlider">Yes
+                </label>
+            </div>
 
             <input type="text" id="email" name="email" placeholder="Enter your E-mail" />
             <input type="password" id="password" name="password" placeholder="Enter your Password" />
@@ -26,14 +34,6 @@
             <!-- <input type="submit" id="logout" name="logout" value="logout" /> -->
         </div>
 
-        <!-- Are you a caretaker slider -->
-        <div>
-            <h2>Are you a caretaker?</h2>
-            <label>
-                <span>Choose an option:</span>No
-                <input type="range" min="0" max="1" value="0" step="1" id="yesNoSlider">Yes
-            </label>
-        </div>
 
     </div>
 </body>
@@ -43,7 +43,7 @@
 
 
 <script type="module">
- 
+
     var slider = document.getElementById('yesNoSlider');
     var selectedOptionText = document.getElementById('selectedOption');
     var isCaretakerValue = false;
@@ -53,10 +53,10 @@
 
         if (selectedValue === 0) {
             isCaretakerValue = false;
-            console.log('Selected Option: No' + isCaretakerValue);
+            console.log('Selected Option: ' + isCaretakerValue);
         } else {
             isCaretakerValue = true;
-            console.log('Selected Option: Yes' + isCaretakerValue);
+            console.log('Selected Option: ' + isCaretakerValue);
         }
     });
 
@@ -162,7 +162,57 @@
             });
     });
 
-    
+    //with google
+    socialsigningoogle.addEventListener('click', (e) => {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                // This gives you a Google Access Token. You can use it to access the Google API.
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential.accessToken;
+                // The signed-in user info.
+                const user = result.user;
+                // IdP data available using getAdditionalUserInfo(result)
+                //alert('Google Login');
+
+                //----------------
+                if (isCaretakerValue == false) { //No
+                    setDoc(doc(database, "users", user.uid), {
+                        email: email,
+                        isCaretaker: isCaretakerValue,
+                        pulses: arrayUnion()
+                    }).then(() => { //then ist wichtig, sonst wird der code nicht ausgeführt
+                        alert('User logged in!');
+                        location.replace("main.html");
+                    });
+                } else if (isCaretakerValue == true) {
+                    setDoc(doc(database, "users", user.uid), {
+                        email: email,
+                        isCaretaker: isCaretakerValue,
+                        patients: arrayUnion()
+                    }).then(() => { //then ist wichtig, sonst wird der code nicht ausgeführt
+                        alert('Caretaker logged in!');
+                        location.replace("main_caretaker.html");
+                    });
+                }
+                    //----------------
+
+
+                    //location.replace("PulsNotifyBluetoothBangleJS.html");
+                }).catch((error) => {
+                    // Handle Errors here.
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    // The email of the user's account used.
+                    const email = error.customData.email;
+                    // The AuthCredential type that was used.
+                    const credential = GoogleAuthProvider.credentialFromError(error);
+
+                    alert(errorMessage);
+
+                });
+
+    });
+
 
 </script>
 

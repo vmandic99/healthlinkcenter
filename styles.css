@@ -1,78 +1,310 @@
 /* styles.css */
+#content {
+  padding-left: 5px;
+  background: #f8f8f8;
+}
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+#savesubmit {
+  background-color: #3498db;
+  color: #fff;
+  padding: 15px 20px;
+  /* Anpassung der Padding-Werte für Höhe und Breite */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 16px;
+  /* Anpassung der Schriftgröße */
+  width: 80px;
 }
 
 label {
-    display: block;
-    margin-bottom: 5px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 input[type="range"] {
-    width: 30px;
+  width: 30px;
 }
 
 #redDiv {
-    background-color: red;
-    margin: 0;
-    padding: 0;
+  background-color: red;
+  margin: 0;
+  padding: 0;
 }
 
 #redDiv img {
-    width: 50px;
-    height: 50px;
-    padding: 5px;
+  width: 50px;
+  height: 50px;
+  padding: 5px;
 }
 
 #diagnosisList {
-    display: none;
+  display: none;
 }
 
-ul, .tree {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
+ul,
+.tree {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
 
-  .caret {
-    cursor: pointer;
-    user-select: none;
-  }
+.caret {
+  cursor: pointer;
+  user-select: none;
+}
 
-  .caret::before {
-    content: "\25B6";
-    color: black;
-    display: inline-block;
-    margin-right: 6px;
-  }
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
 
-  .caret-down::before {
-    transform: rotate(90deg);
-  }
+.caret-down::before {
+  transform: rotate(90deg);
+}
 
-  .nested {
-    display: none;
-  }
+.nested {
+  display: none;
+}
 
-  .active {
-    display: block;
-  }
+.active {
+  display: block;
+}
 
-  #logoutButton {
-    position: fixed;
-    right: 5px; /* Abstand vom rechten Rand */
-    background: none;
-    border: none;
-    cursor: pointer;
-    transform: scale(0.8); 
-  }
+#logoutButton {
+  position: fixed;
+  right: 5px;
+  /* Abstand vom rechten Rand */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transform: scale(0.8);
+}
 
-  #logoutButton:hover {
-    transform: scale(0.9); /* Ändere die Skalierung beim Hovern */
-  }
+#logoutButton:hover {
+  transform: scale(0.9);
+  /* Ändere die Skalierung beim Hovern */
+}
+
 #logoImage {
   cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#login-box {
+  width: 400px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+}
+
+.left {
+  width: 60%;
+  padding-right: 20px;
+}
+
+.right {
+  width: 40%;
+  text-align: center;
+}
+
+h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#login,
+#sighUp,
+#socialsigningoogle {
+  background: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#login:hover,
+#sighUp:hover,
+#socialsigningoogle:hover {
+  background: #1e87d8;
+}
+
+.loginwith {
+  display: block;
+  margin-bottom: 15px;
+  color: #666;
+}
+
+/* Optional styling for caretaker slider */
+h2 {
+  font-size: 18px;
+  color: #333;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+/* Add more styles as needed */
+label {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+#yesNoSlider {
+  width: 30%;
+  /*margin: 0 10px;*/
+  outline: none;
+  /* Entfernt den Standard-Fokus-Rahmen */
+}
+
+/* Stil für den Slider-Punkt */
+#yesNoSlider::-webkit-slider-thumb {
+  width: 20px;
+  /* Breite des Slider-Punkts */
+  height: 20px;
+  /* Höhe des Slider-Punkts */
+  background-color: #3498db;
+  /* Farbe des Slider-Punkts */
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#yesNoSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background-color: #3498db;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#yesNoSlider::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  background-color: #3498db;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#searchInput {
+  width: 200px;
+  /* Anpassen der Breite des Suchfelds */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+  /* Optionaler Abstand zum nächsten Element */
+}
+
+
+
+
+
+
+
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+
+p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+#pulsemeasurement {
+  background-color: #3498db;
+  color: #fff;
+  padding: 15px 20px;
+  /* Anpassung der Padding-Werte für Höhe und Breite */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 16px;
+  /* Anpassung der Schriftgröße */
+  width: 200px;
+}
+
+#addnewcare {
+  background-color: #3498db;
+  color: #fff;
+  padding: 15px 20px;
+  /* Anpassung der Padding-Werte für Höhe und Breite */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 16px;
+  /* Anpassung der Schriftgröße */
+  width: 150px;
+}
+
+#pulsemeasurement:hover,
+#addnewcare:hover {
+  background-color: #1e87d8;
+}
+
+#emailcare {
+  width: 300px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+#caretakerList {
+  list-style-type: none;
+  padding: 0;
+}
+
+#caretakerList li {
+  font-size: 14px;
+  margin-bottom: 5px;
 }
