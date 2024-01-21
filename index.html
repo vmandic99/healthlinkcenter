@@ -230,13 +230,13 @@
 
 
 
-                await setDoc(doc(database, "users", user.uid), {
+                await updateDoc(doc(database, "users", user.uid), {
                     email: user.email,
                     isCaretaker: 0,
                     pulses: arrayUnion()
                 }).then(() => { //then ist wichtig, sonst wird der code nicht ausgeführt
                     localStorage.setItem('useruid', user.uid);
-                    localStorage.setItem('useremail', email);
+                    localStorage.setItem('useremail', user.email);
                     alert('User logged in!');
                     location.replace("main.html");
                 });
