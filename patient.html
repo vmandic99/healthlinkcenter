@@ -19,7 +19,7 @@
     </div>
     <div id="content">
     <h1>Measurements</h1>
-    <p>Hier finden Sie die Pulsmessungen des jeweiligen Patienten. Klicken Sie auf ein Button um die Messung grafisch des jeweiligen Zeitpunktes zu sehen.</p>
+    <p>Here are the patient's heart rate measurements. Click a button to view a specific measurement graphically.</p>
 
     <ul id="measurementList">
         <!-- Here the measurement values will be inserted -->
@@ -75,13 +75,13 @@
 
     if (email) {
         var emailElement = document.createElement("p");
-        emailElement.textContent = "Ausgewählter Patient: " + email;
+        emailElement.textContent = "Selected patient: " + email;
         document.body.appendChild(emailElement);
         emailurl = email;
     } else {
         // Fallback, wenn keine E-Mail in der URL gefunden wurde
         var errorElement = document.createElement("p");
-        errorElement.textContent = "Keine E-Mail gefunden.";
+        errorElement.textContent = "No E-Mail was found.";
         document.body.appendChild(errorElement);
     }
 
