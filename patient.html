@@ -205,7 +205,7 @@
                     data: {
                         labels: 'Scatter Dataset',
                         datasets: [{
-                            label: 'Pulsmessung vom ' + button.textContent + ' Uhr',
+                            label: 'Measurement from ' + button.textContent,
                             data: measurementArray[button.getAttribute("id")].pulse.map(function (point) {
                                 return { x: point[0], y: point[1] };
                             }),
