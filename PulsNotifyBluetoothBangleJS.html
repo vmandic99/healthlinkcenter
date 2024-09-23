@@ -134,14 +134,14 @@
     //------------- Verbindung aufbauen und Daten anzeigen -----------
     async function displayServices(server) {
       const deviceInfoDiv = document.getElementById('deviceInfo');
-      //deviceInfoDiv.innerHTML += '<h2>Dienste und Charakteristiken</h2>';
+      deviceInfoDiv.innerHTML += '<h2>Dienste und Charakteristiken</h2>';
 
       //SERVICE
       // Verwende den Weight Scale Service mit der Standard-UUID 0x1805
       const myService = await server.getPrimaryService('0000180d-0000-1000-8000-00805f9b34fb');
       const characteristicDiv = document.createElement('div');
-      //characteristicDiv.innerHTML = `<p><strong>Service UUID:</strong> ${myService.uuid}</p>`;
-      //deviceInfoDiv.appendChild(characteristicDiv);
+      characteristicDiv.innerHTML = `<p><strong>Service UUID:</strong> ${myService.uuid}</p>`;
+      deviceInfoDiv.appendChild(characteristicDiv);
 
       //Characteristic
       // Verwende die Standard-UUID 0x2A9D für die Weight Charakteristik
@@ -150,8 +150,8 @@
 
       if (myCharacteristic) {
         const characteristicDiv2 = document.createElement('div');
-        //characteristicDiv2.innerHTML = `<p><strong>Characteristic UUID:</strong> ${myCharacteristic.uuid}</p>`;
-        //deviceInfoDiv.appendChild(characteristicDiv2);
+        characteristicDiv2.innerHTML = `<p><strong>Characteristic UUID:</strong> ${myCharacteristic.uuid}</p>`;
+        deviceInfoDiv.appendChild(characteristicDiv2);
         // Benachrichtigungen für die Charakteristik starten
         await myCharacteristic.startNotifications().then(_ => {
           console.log('> Benachrichtigungen gestartet');
