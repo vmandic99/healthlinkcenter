@@ -127,10 +127,7 @@
     function displayDeviceInfo(device) {
       const deviceInfoDiv = document.getElementById('deviceInfo');
       deviceInfoDiv.innerHTML = `
-        <h2>Geräteinformationen</h2>
-        <p><strong>Name:</strong> ${device.name}</p>
-        <p><strong>ID:</strong> ${device.id}</p>
-        <p><strong>GATT-Server verbunden:</strong> Ja</p>
+        <p><strong>Verbunden mit:</strong> ${device.name}</p>
       `;
     }
 
