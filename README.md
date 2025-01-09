@@ -29,19 +29,19 @@ This project uses the following technologies:
 ## Installation
 
 ### 1. Clone the Repository
-git clone https://github.com/vmandic99/healthlinkcenter.git
+```git clone https://github.com/vmandic99/healthlinkcenter.git```
 
 ### 2. Open the Project
-cd healthlinkcenter
+```cd healthlinkcenter```
 
 ## 3. Install Dependencies
-npm install
+```npm install```
 
 ### 4. Firebase Configuration
 You can keep the current settings to test with the existing database, or you can create your own Firebase project and use your own database depending on your needs.
 
 ## Important!
-Ensure that your Bluetooth device supports the Heart Rate Measurement characteristic (0x2A37) within the 0x180D Heart Rate service on the GATT server.
-This project uses the Bluetooth Web API, making it compatible with browsers such as Chrome, Edge, and Opera. For more information on browser compatibility, visit [MDN Web Bluetooth API Compatibility](https://developer.mozilla.org/de/docs/Web/API/Web_Bluetooth_API#browser-kompatibilit%C3%A4t).
+- Ensure that your Bluetooth device supports the Heart Rate Measurement characteristic (0x2A37) within the 0x180D Heart Rate service on the GATT server.
+- This project uses the Bluetooth Web API, making it compatible with browsers such as Chrome, Edge, and Opera. For more information on browser compatibility, visit [MDN Web Bluetooth API Compatibility](https://developer.mozilla.org/de/docs/Web/API/Web_Bluetooth_API#browser-kompatibilit%C3%A4t).
 
 
