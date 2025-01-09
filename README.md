@@ -8,7 +8,21 @@ HealthLinkCenter is a web application that allows patients with physical disabil
 - **Data Visualization**: The measured data is displayed graphically in real-time.
 - **Firebase Integration**: All collected data is securely stored in a Firebase database.
 - **Remote Monitoring**: Doctors and caregivers can access and monitor the patient's health data without the patient needing to leave home.
-- **User-friendly Interface**: The application provides a user-friendly interface that allows even patients with limited technical skills to use the app.
+
+## Demo Video
+
+Watch the demo video here:
+
+[![Demo Video](https://vumbnail.com/1045304319.jpg)](https://vimeo.com/1045304319)
+
+## Technologies Used
+
+This project uses the following technologies:
+
+- **Bluetooth Web API**: Allows communication with Bluetooth devices directly from the web browser.
+- **HTML5, CSS3, and JavaScript**: The core technologies used for building the front-end of the application.
+- **Firebase**: Used for storing and managing data securely in real-time, as well as for user authentication.
+- **Bangle.js 2**: To measure the heart rate, the Bangle.js 2 smartwatch was used. However, any other Bluetooth device that supports the Heart Rate Measurement characteristic (0x2A37) and the Heart Rate Service (0x180D) can also be used.
 
 ## Installation
 
@@ -24,10 +38,8 @@ npm install
 ### 4. Firebase Configuration
 You can keep the current settings to test with the existing database, or you can create your own Firebase project and use your own database depending on your needs.
 
-## Demo Video
-
-Watch the demo video here:
-
-[![Demo Video](https://vumbnail.com/1045304319.jpg)](https://vimeo.com/1045304319)
+## Important!
+Ensure that your Bluetooth device supports the Heart Rate Measurement characteristic (0x2A37) within the 0x180D Heart Rate service on the GATT server.
+This project uses the Bluetooth Web API, making it compatible with browsers such as Chrome, Edge, and Opera. For more information on browser compatibility, visit [MDN Web Bluetooth API Compatibility](https://developer.mozilla.org/de/docs/Web/API/Web_Bluetooth_API#browser-kompatibilit%C3%A4t).
 
 
