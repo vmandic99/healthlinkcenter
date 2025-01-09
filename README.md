@@ -41,7 +41,7 @@ This project uses the following technologies:
 You can keep the current settings to test with the existing database, or you can create your own Firebase project and use your own database depending on your needs.
 
 ## Important!
-- Ensure that your Bluetooth device supports the Heart Rate Measurement characteristic (0x2A37) within the 0x180D Heart Rate service on the GATT server.
+- Ensure that your Bluetooth device supports the Heart Rate Measurement characteristic (0x2A37) within the Heart Rate service (0x180D) on the GATT server. If your device uses custom services or characteristics, you may need to adapt these UUIDs accordingly.
 - This project uses the Bluetooth Web API, making it compatible with browsers such as Chrome, Edge, and Opera. For more information on browser compatibility, visit [MDN Web Bluetooth API Compatibility](https://developer.mozilla.org/de/docs/Web/API/Web_Bluetooth_API#browser-kompatibilit%C3%A4t).
 
 
