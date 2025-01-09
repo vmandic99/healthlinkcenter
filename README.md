@@ -2,18 +2,20 @@
 
 HealthLinkCenter is a web application that allows patients with physical disabilities or chronic conditions to easily measure their pulse from the comfort of their home. The app uses Bluetooth technology to communicate with a smartwatch to collect data and securely stores it in a Firebase database. This allows doctors and caregivers to remotely monitor the patient's health data.
 
-## Features
-
-- **Bluetooth Pulse Measurement**: Allows patients to easily measure their pulse using a smartwatch.
-- **Data Visualization**: The measured data is displayed graphically in real-time.
-- **Firebase Integration**: All collected data is securely stored in a Firebase database.
-- **Remote Monitoring**: Doctors and caregivers can access and monitor the patient's health data without the patient needing to leave home.
+Currently, you can visit the site at: [https://vmandic99.github.io/healthlinkcenter/](https://vmandic99.github.io/healthlinkcenter/)
 
 ## Demo Video
 
 Watch the demo video here:
 
 [![Demo Video](https://vumbnail.com/1045304319.jpg)](https://vimeo.com/1045304319)
+
+## Features
+
+- **Bluetooth Pulse Measurement**: Allows patients to easily measure their pulse using a smartwatch.
+- **Data Visualization**: The measured data is displayed graphically in real-time.
+- **Firebase Integration**: All collected data is securely stored in a Firebase database.
+- **Remote Monitoring**: Doctors and caregivers can access and monitor the patient's health data without the patient needing to leave home.
 
 ## Technologies Used
 
