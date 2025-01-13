@@ -8,7 +8,7 @@ Currently, you can visit the site at: [https://vmandic99.github.io/healthlinkcen
 
 Watch the demo video here:
 
-[![Demo Video](https://vumbnail.com/1045304319.jpg)](https://vimeo.com/1045304319)
+[![Demo Video](https://vumbnail.com/1046318230.jpg)](https://vimeo.com/1046318230)
 
 ## Features
 
